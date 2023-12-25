@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="enbirr" id="0.0-1-create-activity-table">
+        <createTable tableName="activity" remarks="A kind of action that person could perform. It can refill or waste certain person resources.">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(128)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="enbirr" id="0.0-2-create-model-table" >
+        <createTable tableName="model">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(128)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="enbirr" id="0.0-3-create-resource-table" >
+        <createTable tableName="resource" remarks="A kind of person's energy, which can be refilled or wasted through certain activities.">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(128)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="enbirr" id="0.0-4-create-model-activity-table" >
+        <createTable tableName="model_activity" remarks="Connections between model and related activities.">
+            <column name="model_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="model_activity_model_fkey"
+                             referencedTableName="model"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="activity_id" type="uuid" remarks="Activity that is included in the model.">
+                <constraints nullable="false"
+                             foreignKeyName="model_activity_activity_fkey"
+                             referencedTableName="activity"
+                             referencedColumnNames="id"/>/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="model_activity" columnNames="model_id,activity_id"/>
+    </changeSet>
+
+    <changeSet author="enbirr" id="0.0-5-create-model-resource-table" >
+        <createTable tableName="model_resource" remarks="Connections between model and related resources.">
+            <column name="model_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="model_resource_model_fkey"
+                             referencedTableName="model"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="resource_id" type="uuid" remarks="Resource that is included in the model.">
+                <constraints nullable="false"
+                             foreignKeyName="model_resource_resource_fkey"
+                             referencedTableName="resource"
+                             referencedColumnNames="id"/>/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="model_resource" columnNames="model_id,resource_id"/>
+    </changeSet>
+
+    <changeSet author="enbirr" id="0.0-6-create-activity-impact-table" >
+        <createTable tableName="activity_impact" remarks="Defines the quantity by which the resource will be increased/decreased as a result of the activity.">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="model_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="activity_impact_model_fkey"
+                             referencedTableName="model"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="activity_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="activity_impact_activity_fkey"
+                             referencedTableName="activity"
+                             referencedColumnNames="id"/>/>
+            </column>
+            <column name="resource_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="activity_impact_resource_fkey"
+                             referencedTableName="resource"
+                             referencedColumnNames="id"/>/>
+            </column>
+            <column name="quantity" type="smallint" remarks="If positive, the resource will be increased by the corresponding quantity as a result of the performed activity. Otherwise, the resource will be reduced.">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
