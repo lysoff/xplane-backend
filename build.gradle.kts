@@ -7,7 +7,7 @@ plugins {
 	kotlin("plugin.spring") version "1.9.20"
 }
 
-group = "app.xplane"
+group = "app.xplne"
 version = "0.0.1-SNAPSHOT"
 
 java {

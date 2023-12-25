@@ -1,11 +1,11 @@
-package app.xplane.backend
+package app.xplne.backend
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class XplaneBackendApplication
+class XplneBackendApplication
 
 fun main(args: Array<String>) {
-	runApplication<XplaneBackendApplication>(*args)
+	runApplication<XplneBackendApplication>(*args)
 }

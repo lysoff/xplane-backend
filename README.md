@@ -1,5 +1,5 @@
-# xplane-backend
-Backend application for XPlane
+# xplne-backend
+Backend application for Xplne
 
 ### How to run locally
 - make sure that Java 17 and Docker are installed

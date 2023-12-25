@@ -1,4 +1,4 @@
-package app.xplane.backend
+package app.xplne.backend
 
 import org.springframework.boot.fromApplication
 import org.springframework.boot.test.context.TestConfiguration
@@ -9,7 +9,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 
 @TestConfiguration(proxyBeanMethods = false)
-class TestXplaneBackendApplication {
+class TestXplneBackendApplication {
 
 	@Bean
 	@ServiceConnection
@@ -20,5 +20,5 @@ class TestXplaneBackendApplication {
 }
 
 fun main(args: Array<String>) {
-	fromApplication<XplaneBackendApplication>().with(TestXplaneBackendApplication::class).run(*args)
+	fromApplication<XplneBackendApplication>().with(TestXplneBackendApplication::class).run(*args)
 }

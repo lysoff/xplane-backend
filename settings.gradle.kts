@@ -1,1 +1,1 @@
-rootProject.name = "xplane-backend"
+rootProject.name = "xplne-backend"
