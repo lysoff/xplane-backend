@@ -46,4 +46,6 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	// show standard out and standard error of the test JVM(s) on the console
+	testLogging.showStandardStreams = true
 }
