@@ -1,0 +1,148 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0.0-1-create-activity-table
+      author: enbirr
+      changes:
+        - createTable:
+            tableName: activity
+            remarks: A kind of action that person could perform. It can refill or waste certain person resources.
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(128)
+
+  - changeSet:
+      id: 0.0-2-create-model-table
+      author: enbirr
+      changes:
+        - createTable:
+            tableName: model
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(128)
+
+  - changeSet:
+      id: 0.0-3-create-resource-table
+      author: enbirr
+      changes:
+        - createTable:
+            tableName: resource
+            remarks: A kind of person's energy, which can be refilled or wasted through certain activities.
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(128)
+
+  - changeSet:
+      id: 0.0-4-create-model-activity-table
+      author: enbirr
+      changes:
+        - createTable:
+            tableName: model_activity
+            remarks: Connections between model and related activities.
+            columns:
+              - column:
+                  name: model_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: model_activity_model_fkey
+                    references: model(id)
+              - column:
+                  name: activity_id
+                  type: uuid
+                  remarks: Activity that is included in the model.
+                  constraints:
+                    nullable: false
+                    foreignKeyName: model_activity_activity_fkey
+                    references: activity(id)
+        - addPrimaryKey:
+            tableName: model_activity
+            columnNames: model_id, activity_id
+
+  - changeSet:
+      id: 0.0-5-create-model-resource-table
+      author: enbirr
+      changes:
+        - createTable:
+            tableName: model_resource
+            remarks: Connections between model and related resources.
+            columns:
+              - column:
+                  name: model_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: model_resource_model_fkey
+                    references: model(id)
+              - column:
+                  name: resource_id
+                  type: uuid
+                  remarks: Resource that is included in the model.
+                  constraints:
+                    nullable: false
+                    foreignKeyName: model_resource_resource_fkey
+                    references: resource(id)
+              - column:
+                  name: amount
+                  type: smallint
+        - addPrimaryKey:
+            tableName: model_resource
+            columnNames: model_id, resource_id
+
+  - changeSet:
+      id: 0.0-6-create-activity-impact-table
+      author: enbirr
+      changes:
+        - createTable:
+            tableName: activity_impact
+            remarks: Defines the quantity by which the resource will be increased/decreased as a result of the activity.
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: model_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: activity_impact_model_fkey
+                    references: model(id)
+              - column:
+                  name: activity_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: activity_impact_activity_fkey
+                    references: activity(id)
+              - column:
+                  name: resource_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: activity_impact_resource_fkey
+                    references: resource(id)
+              - column:
+                  name: quantity
+                  type: smallint
+                  remarks: If positive, the resource will be increased by the corresponding quantity as a result of the performed activity. Otherwise, the resource will be reduced.
+                  constraints:
+                    nullable: false
