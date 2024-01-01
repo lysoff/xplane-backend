@@ -36,6 +36,7 @@ dependencies {
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:postgresql")
 	testImplementation("org.testcontainers:r2dbc")
+	testImplementation("com.chikli.spring:spring-rxtx-test-support:1.1.0")
 }
 
 tasks.withType<KotlinCompile> {
