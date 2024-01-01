@@ -1,16 +1,11 @@
 package app.xplne.backend.repository
 
-import app.xplne.backend.config.TestDatabaseConfiguration
+import app.xplne.backend.annotation.RepositoryIntegrationTest
 import app.xplne.backend.model.Model
-import com.chikli.spring.rxtx.RxTestTransaction
 import com.chikli.spring.rxtx.testWithTx
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace
-import org.springframework.context.annotation.Import
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria.where
 import org.springframework.data.relational.core.query.Query.query
@@ -18,9 +13,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
 
-@DataR2dbcTest
-@AutoConfigureTestDatabase(replace = Replace.NONE)
-@Import(TestDatabaseConfiguration::class, RxTestTransaction::class)
+@RepositoryIntegrationTest
 class ModelRepositoryIntegrationTest(
     @Autowired private val modelRepository: ModelRepository,
     @Autowired private val template: R2dbcEntityTemplate
@@ -134,7 +127,9 @@ class ModelRepositoryIntegrationTest(
         return savedModelsMono
     }
 
-    private fun findAll() = template.select(Model::class.java).all()
+    private fun findAll(): Flux<Model> {
+        return template.select(Model::class.java).all()
+    }
 
     private fun findById(uuid: UUID?): Mono<Model> {
         return template.select(Model::class.java)
