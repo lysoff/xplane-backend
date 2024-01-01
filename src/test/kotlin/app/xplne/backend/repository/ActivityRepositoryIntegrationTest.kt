@@ -2,6 +2,8 @@ package app.xplne.backend.repository
 
 import app.xplne.backend.annotation.RepositoryIntegrationTest
 import app.xplne.backend.model.Activity
+import app.xplne.backend.util.TestDataGenerator
+import app.xplne.backend.util.insertAll
 import com.chikli.spring.rxtx.testWithTx
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -43,7 +45,7 @@ class ActivityRepositoryIntegrationTest(
     fun givenChangedActivity_whenSaveIsCalled_thenItIsUpdatedInDB() {
         // GIVEN
         val initialActivity = Activity(id = UUID.randomUUID(), name = "Initial name")
-        val insertedMono = insertActivities(listOf(initialActivity))
+        val insertedMono = template.insert(initialActivity)
         // WHEN
         val changedActivity = initialActivity.copy(name = "Changed name")
         val updatedMono = insertedMono
@@ -59,8 +61,8 @@ class ActivityRepositoryIntegrationTest(
     @Test
     fun givenExistingActivitiesInDB_whenFindAllIsCalled_thenAllAreReturned() {
         // GIVEN
-        val expectedActivities: List<Activity> = createActivityExamples()
-        val insertedMono: Mono<Activity> = insertActivities(expectedActivities)
+        val expectedActivities: List<Activity> = TestDataGenerator.createActivities()
+        val insertedMono: Mono<Activity> = template.insertAll(expectedActivities)
         // WHEN
         val foundFlux: Flux<Activity> = insertedMono
             .thenMany(activityRepository.findAll())
@@ -77,8 +79,8 @@ class ActivityRepositoryIntegrationTest(
     @Test
     fun givenExistingActivitiesInDB_whenFindByIdIsCalled_thenOneIsReturned() {
         // GIVEN
-        val existingActivities: List<Activity> = createActivityExamples()
-        val insertedMono: Mono<Activity> = insertActivities(existingActivities)
+        val existingActivities: List<Activity> = TestDataGenerator.createActivities()
+        val insertedMono: Mono<Activity> = template.insertAll(existingActivities)
         // WHEN
         val expectedActivity = existingActivities[0]
         val foundMono: Mono<Activity> = insertedMono
@@ -93,8 +95,8 @@ class ActivityRepositoryIntegrationTest(
     @Test
     fun givenExistingActivitiesInDB_whenDeleteByIdIsCalled_thenItIsExecuted() {
         // GIVEN
-        val existingActivities: List<Activity> = createActivityExamples()
-        val insertedMono: Mono<Activity> = insertActivities(existingActivities)
+        val existingActivities: List<Activity> = TestDataGenerator.createActivities()
+        val insertedMono: Mono<Activity> = template.insertAll(existingActivities)
         // WHEN
         val expectedActivities = existingActivities.toMutableList()
         val activityToDelete = expectedActivities.removeAt(0)
@@ -111,20 +113,6 @@ class ActivityRepositoryIntegrationTest(
                 assertTrue(foundActivities.containsAll(expectedActivities))
             }
             .verifyComplete()
-    }
-
-    private fun createActivityExamples() = listOf(
-        Activity(id = UUID.randomUUID(), name = "Sleeping"),
-        Activity(id = UUID.randomUUID(), name = "Workout"),
-        Activity(id = UUID.randomUUID(), name = "Eating junk food")
-    )
-
-    private fun insertActivities(expectedActivities: List<Activity>): Mono<Activity> {
-        var insertedMono: Mono<Activity> = Mono.empty()
-        expectedActivities.forEach {
-            insertedMono = insertedMono.then(template.insert(it))
-        }
-        return insertedMono
     }
 
     private fun findAll(): Flux<Activity> {

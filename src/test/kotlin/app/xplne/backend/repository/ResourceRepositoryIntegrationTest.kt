@@ -2,6 +2,8 @@ package app.xplne.backend.repository
 
 import app.xplne.backend.annotation.RepositoryIntegrationTest
 import app.xplne.backend.model.Resource
+import app.xplne.backend.util.TestDataGenerator
+import app.xplne.backend.util.insertAll
 import com.chikli.spring.rxtx.testWithTx
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -43,7 +45,7 @@ class ResourceRepositoryIntegrationTest(
     fun givenChangedResource_whenSaveIsCalled_thenItIsUpdatedInDB() {
         // GIVEN
         val initialResource = Resource(id = UUID.randomUUID(), name = "Initial name")
-        val insertedMono = insertResources(listOf(initialResource))
+        val insertedMono = template.insert(initialResource)
         // WHEN
         val changedResource = initialResource.copy(name = "Changed name")
         val updatedMono = insertedMono
@@ -59,8 +61,8 @@ class ResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingResourcesInDB_whenFindAllIsCalled_thenAllAreReturned() {
         // GIVEN
-        val expectedResources: List<Resource> = createResourceExamples()
-        val insertedMono: Mono<Resource> = insertResources(expectedResources)
+        val expectedResources: List<Resource> = TestDataGenerator.createResources()
+        val insertedMono: Mono<Resource> = template.insertAll(expectedResources)
         // WHEN
         val foundFlux: Flux<Resource> = insertedMono
             .thenMany(resourceRepository.findAll())
@@ -77,8 +79,8 @@ class ResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingResourcesInDB_whenFindByIdIsCalled_thenOneIsReturned() {
         // GIVEN
-        val existingResources: List<Resource> = createResourceExamples()
-        val insertedMono: Mono<Resource> = insertResources(existingResources)
+        val existingResources: List<Resource> = TestDataGenerator.createResources()
+        val insertedMono: Mono<Resource> = template.insertAll(existingResources)
         // WHEN
         val expectedResource = existingResources[0]
         val foundMono: Mono<Resource> = insertedMono
@@ -93,8 +95,8 @@ class ResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingResourcesInDB_whenDeleteByIdIsCalled_thenItIsExecuted() {
         // GIVEN
-        val existingResources: List<Resource> = createResourceExamples()
-        val insertedMono: Mono<Resource> = insertResources(existingResources)
+        val existingResources: List<Resource> = TestDataGenerator.createResources()
+        val insertedMono: Mono<Resource> = template.insertAll(existingResources)
         // WHEN
         val expectedResources = existingResources.toMutableList()
         val resourceToDelete = expectedResources.removeAt(0)
@@ -113,20 +115,6 @@ class ResourceRepositoryIntegrationTest(
             .verifyComplete()
     }
 
-    private fun createResourceExamples() = listOf(
-        Resource(id = UUID.randomUUID(), name = "Vigor"),
-        Resource(id = UUID.randomUUID(), name = "Well-being"),
-        Resource(id = UUID.randomUUID(), name = "Motivation")
-    )
-
-    private fun insertResources(expectedResources: List<Resource>): Mono<Resource> {
-        var insertedMono: Mono<Resource> = Mono.empty()
-        expectedResources.forEach {
-            insertedMono = insertedMono.then(template.insert(it))
-        }
-        return insertedMono
-    }
-
     private fun findAll(): Flux<Resource> {
         return template.select(Resource::class.java).all()
     }
@@ -136,5 +124,4 @@ class ResourceRepositoryIntegrationTest(
             .matching(query(where("id").`is`(uuid!!)))
             .one()
     }
-
 }

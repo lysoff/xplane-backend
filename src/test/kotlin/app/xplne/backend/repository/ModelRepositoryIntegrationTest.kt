@@ -2,6 +2,8 @@ package app.xplne.backend.repository
 
 import app.xplne.backend.annotation.RepositoryIntegrationTest
 import app.xplne.backend.model.Model
+import app.xplne.backend.util.TestDataGenerator
+import app.xplne.backend.util.insertAll
 import com.chikli.spring.rxtx.testWithTx
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -43,7 +45,7 @@ class ModelRepositoryIntegrationTest(
     fun givenChangedModel_whenSaveIsCalled_thenItIsUpdatedInDB() {
         // GIVEN
         val initialModel = Model(id = UUID.randomUUID(), name = "Initial name")
-        val insertedMono = insertModels(listOf(initialModel))
+        val insertedMono = template.insert(initialModel)
         // WHEN
         val changedModel = initialModel.copy(name = "Changed name")
         val updatedMono = insertedMono
@@ -59,8 +61,8 @@ class ModelRepositoryIntegrationTest(
     @Test
     fun givenExistingModelsInDB_whenFindAllIsCalled_thenAllAreReturned() {
         // GIVEN
-        val expectedModels: List<Model> = createModelExamples()
-        val insertedMono: Mono<Model> = insertModels(expectedModels)
+        val expectedModels: List<Model> = TestDataGenerator.createModels()
+        val insertedMono: Mono<Model> = template.insertAll(expectedModels)
         // WHEN
         val foundFlux: Flux<Model> = insertedMono
             .thenMany(modelRepository.findAll())
@@ -77,8 +79,8 @@ class ModelRepositoryIntegrationTest(
     @Test
     fun givenExistingModelsInDB_whenFindByIdIsCalled_thenOneIsReturned() {
         // GIVEN
-        val existingModels: List<Model> = createModelExamples()
-        val insertedMono: Mono<Model> = insertModels(existingModels)
+        val existingModels: List<Model> = TestDataGenerator.createModels()
+        val insertedMono: Mono<Model> = template.insertAll(existingModels)
         // WHEN
         val expectedModel = existingModels[0]
         val foundMono: Mono<Model> = insertedMono
@@ -93,8 +95,8 @@ class ModelRepositoryIntegrationTest(
     @Test
     fun givenExistingModelsInDB_whenDeleteByIdIsCalled_thenItIsExecuted() {
         // GIVEN
-        val existingModels: List<Model> = createModelExamples()
-        val insertedMono: Mono<Model> = insertModels(existingModels)
+        val existingModels: List<Model> = TestDataGenerator.createModels()
+        val insertedMono: Mono<Model> = template.insertAll(existingModels)
         // WHEN
         val expectedModels = existingModels.toMutableList()
         val modelToDelete = expectedModels.removeAt(0)
@@ -111,20 +113,6 @@ class ModelRepositoryIntegrationTest(
                 assertTrue(foundModels.containsAll(expectedModels))
             }
             .verifyComplete()
-    }
-
-    private fun createModelExamples() = listOf(
-        Model(id = UUID.randomUUID(), name = "Basic model"),
-        Model(id = UUID.randomUUID(), name = "Advanced model"),
-        Model(id = UUID.randomUUID(), name = "Superhero model")
-    )
-
-    private fun insertModels(expectedModels: List<Model>): Mono<Model> {
-        var insertedMono: Mono<Model> = Mono.empty()
-        expectedModels.forEach {
-            insertedMono = insertedMono.then(template.insert(it))
-        }
-        return insertedMono
     }
 
     private fun findAll(): Flux<Model> {
