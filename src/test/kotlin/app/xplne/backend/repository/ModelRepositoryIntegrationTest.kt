@@ -120,11 +120,11 @@ class ModelRepositoryIntegrationTest(
     )
 
     private fun insertModels(expectedModels: List<Model>): Mono<Model> {
-        var savedModelsMono: Mono<Model> = Mono.empty()
+        var insertedMono: Mono<Model> = Mono.empty()
         expectedModels.forEach {
-            savedModelsMono = savedModelsMono.then(template.insert(it))
+            insertedMono = insertedMono.then(template.insert(it))
         }
-        return savedModelsMono
+        return insertedMono
     }
 
     private fun findAll(): Flux<Model> {

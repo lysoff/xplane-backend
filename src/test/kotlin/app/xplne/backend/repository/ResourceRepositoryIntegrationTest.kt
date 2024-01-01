@@ -115,16 +115,16 @@ class ResourceRepositoryIntegrationTest(
 
     private fun createResourceExamples() = listOf(
         Resource(id = UUID.randomUUID(), name = "Vigor"),
-        Resource(id = UUID.randomUUID(), name = "Inspiration"),
-        Resource(id = UUID.randomUUID(), name = "motivation")
+        Resource(id = UUID.randomUUID(), name = "Well-being"),
+        Resource(id = UUID.randomUUID(), name = "Motivation")
     )
 
     private fun insertResources(expectedResources: List<Resource>): Mono<Resource> {
-        var savedResourcesMono: Mono<Resource> = Mono.empty()
+        var insertedMono: Mono<Resource> = Mono.empty()
         expectedResources.forEach {
-            savedResourcesMono = savedResourcesMono.then(template.insert(it))
+            insertedMono = insertedMono.then(template.insert(it))
         }
-        return savedResourcesMono
+        return insertedMono
     }
 
     private fun findAll(): Flux<Resource> {
