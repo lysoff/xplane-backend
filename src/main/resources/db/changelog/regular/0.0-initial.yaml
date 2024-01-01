@@ -146,3 +146,23 @@ databaseChangeLog:
                   remarks: If positive, the resource will be increased by the corresponding quantity as a result of the performed activity. Otherwise, the resource will be reduced.
                   constraints:
                     nullable: false
+  - changeSet:
+      id: 0.07-add-uuid-default-value-generation
+      author: enbirr
+      changes:
+        - addDefaultValue:
+            tableName: activity
+            columnName: id
+            defaultValueComputed: gen_random_uuid()
+        - addDefaultValue:
+            tableName: model
+            columnName: id
+            defaultValueComputed: gen_random_uuid()
+        - addDefaultValue:
+            tableName: resource
+            columnName: id
+            defaultValueComputed: gen_random_uuid()
+        - addDefaultValue:
+            tableName: activity_impact
+            columnName: id
+            defaultValueComputed: gen_random_uuid()
