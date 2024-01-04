@@ -2,27 +2,34 @@ package app.xplne.backend.util
 
 import app.xplne.backend.model.Activity
 import app.xplne.backend.model.Model
+import app.xplne.backend.model.ModelResource
 import app.xplne.backend.model.Resource
-import java.util.*
+import java.util.UUID.randomUUID
+import kotlin.random.Random
 
 class TestDataGenerator() {
     companion object {
         fun createModels() = listOf(
-            Model(id = UUID.randomUUID(), name = "Basic model"),
-            Model(id = UUID.randomUUID(), name = "Advanced model"),
-            Model(id = UUID.randomUUID(), name = "Superhero model")
+            createBasicModel(),
+            Model(id = randomUUID(), name = "Advanced model"),
+            Model(id = randomUUID(), name = "Superhero model")
         )
 
-        fun createResources() = listOf(
-            Resource(id = UUID.randomUUID(), name = "Vigor"),
-            Resource(id = UUID.randomUUID(), name = "Well-being"),
-            Resource(id = UUID.randomUUID(), name = "Motivation")
+        fun createBasicModel() = Model(id = randomUUID(), name = "Basic model")
+
+        fun createResourcesForBasicModel() = listOf(
+            Resource(id = randomUUID(), name = "Vigor"),
+            Resource(id = randomUUID(), name = "Well-being"),
+            Resource(id = randomUUID(), name = "Motivation")
         )
+
+        fun createModelResources(model: Model, resources: List<Resource>) =
+            resources.map { ModelResource(model.id!!, it.id!!, Random.nextInt(100).toShort()) }
 
         fun createActivities() = listOf(
-            Activity(id = UUID.randomUUID(), name = "Sleeping"),
-            Activity(id = UUID.randomUUID(), name = "Workout"),
-            Activity(id = UUID.randomUUID(), name = "Eating junk food")
+            Activity(id = randomUUID(), name = "Sleeping"),
+            Activity(id = randomUUID(), name = "Workout"),
+            Activity(id = randomUUID(), name = "Eating junk food")
         )
     }
 }

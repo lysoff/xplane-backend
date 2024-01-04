@@ -61,7 +61,7 @@ class ResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingResourcesInDB_whenFindAllIsCalled_thenAllAreReturned() {
         // GIVEN
-        val expectedResources: List<Resource> = TestDataGenerator.createResources()
+        val expectedResources: List<Resource> = TestDataGenerator.createResourcesForBasicModel()
         val insertedMono: Mono<Resource> = template.insertAll(expectedResources)
         // WHEN
         val foundFlux: Flux<Resource> = insertedMono
@@ -79,7 +79,7 @@ class ResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingResourcesInDB_whenFindByIdIsCalled_thenOneIsReturned() {
         // GIVEN
-        val existingResources: List<Resource> = TestDataGenerator.createResources()
+        val existingResources: List<Resource> = TestDataGenerator.createResourcesForBasicModel()
         val insertedMono: Mono<Resource> = template.insertAll(existingResources)
         // WHEN
         val expectedResource = existingResources[0]
@@ -95,7 +95,7 @@ class ResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingResourcesInDB_whenDeleteByIdIsCalled_thenItIsExecuted() {
         // GIVEN
-        val existingResources: List<Resource> = TestDataGenerator.createResources()
+        val existingResources: List<Resource> = TestDataGenerator.createResourcesForBasicModel()
         val insertedMono: Mono<Resource> = template.insertAll(existingResources)
         // WHEN
         val expectedResources = existingResources.toMutableList()
