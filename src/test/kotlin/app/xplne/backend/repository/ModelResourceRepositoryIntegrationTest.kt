@@ -1,12 +1,8 @@
 package app.xplne.backend.repository
 
 import app.xplne.backend.annotation.RepositoryIntegrationTest
-import app.xplne.backend.model.Model
 import app.xplne.backend.model.ModelResource
-import app.xplne.backend.model.Resource
-import app.xplne.backend.util.TestDataGenerator.Companion.createBasicModel
-import app.xplne.backend.util.TestDataGenerator.Companion.createModelResources
-import app.xplne.backend.util.TestDataGenerator.Companion.createResourcesForBasicModel
+import app.xplne.backend.util.TestDataGenerator
 import app.xplne.backend.util.insertAll
 import com.chikli.spring.rxtx.testWithTx
 import org.junit.jupiter.api.Assertions.*
@@ -18,31 +14,32 @@ import org.springframework.data.relational.core.query.Query.query
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
-import java.util.UUID.randomUUID
 
 @RepositoryIntegrationTest
 class ModelResourceRepositoryIntegrationTest(
-    @Autowired private val modelResourceRepository: ModelResourceRepository,
+    @Autowired private val repository: ModelResourceRepository,
     @Autowired private val template: R2dbcEntityTemplate
 ) {
+    private val generated = TestDataGenerator()
+
     @Test
     fun givenNewModelResource_whenUpsertIsCalled_thenItIsInsertedInDB() {
         // GIVEN
-        val model = Model(id = randomUUID(), name = "Basic model")
-        val resource = Resource(id = randomUUID(), name = "Vigor")
-        val givenMono = template.insert(model).then(template.insert(resource))
-
-        val modelResource = ModelResource(model.id!!, resource.id!!, 100)
+        val model = generated.basicModel
+        val resource = generated.basicResources[0]
+        val dbPrepared = template.insert(model)
+            .then(template.insert(resource))
         // WHEN
-        val insertedMono = givenMono.then(modelResourceRepository.upsert(modelResource))
+        val modelResource = ModelResource(model.id!!, resource.id!!, 100)
+        val insertedMono = dbPrepared.then(repository.upsert(modelResource))
         // THEN
         insertedMono
             .thenMany(findAllByModelId(model.id!!))
             .collectList()
             .testWithTx()
-            .assertNext { modelResources ->
-                assertEquals(1, modelResources.size)
-                assertTrue(modelResources.contains(modelResource))
+            .assertNext { foundList ->
+                assertEquals(1, foundList.size)
+                assertTrue(foundList.contains(modelResource))
             }
             .verifyComplete()
     }
@@ -50,24 +47,25 @@ class ModelResourceRepositoryIntegrationTest(
     @Test
     fun givenChangedModelResource_whenUpsertIsCalled_thenItIsUpdatedInDB() {
         // GIVEN
-        val model = Model(id = randomUUID(), name = "Basic model")
-        val resource = Resource(id = randomUUID(), name = "Vigor")
-        val modelResource = ModelResource(model.id!!, resource.id!!, 100)
-        val givenMono = template.insert(model)
+        val model = generated.basicModel
+        val resource = generated.basicResources[0]
+        val modelResource = ModelResource(model.id!!, resource.id!!, amount = 100)
+        val dbPrepared = template.insert(model)
             .then(template.insert(resource))
             .then(template.insert(modelResource))
         // WHEN
         val changedModelResource = modelResource.copy(amount = 50)
-        val insertedMono = givenMono.then(
-            modelResourceRepository.upsert(changedModelResource))
+        val insertedMono = dbPrepared.then(
+            repository.upsert(changedModelResource)
+        )
         // THEN
         insertedMono
             .thenMany(findAllByModelId(model.id!!))
             .collectList()
             .testWithTx()
-            .assertNext { modelResources ->
-                assertEquals(1, modelResources.size)
-                assertTrue(modelResources.contains(changedModelResource))
+            .assertNext { foundList ->
+                assertEquals(1, foundList.size)
+                assertTrue(foundList.contains(changedModelResource))
             }
             .verifyComplete()
     }
@@ -75,23 +73,17 @@ class ModelResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingModelResourcesInDB_whenFindByModelIsCalled_thenAllAreReturned() {
         // GIVEN
-        val model = createBasicModel()
-        val resources = createResourcesForBasicModel()
-        val modelResources = createModelResources(model, resources)
-
-        val insertedMono: Mono<ModelResource> = template
-            .insert(model)
-            .then(template.insertAll(resources))
-            .then(template.insertAll(modelResources))
+        val expectedEntities = generated.basicModelResources
+        val dbPrepared = fillDatabase()
         // WHEN
-        val foundFlux: Flux<ModelResource> = insertedMono
-            .thenMany(modelResourceRepository.findAllByModelId(model.id!!))
+        val foundFlux: Flux<ModelResource> = dbPrepared
+            .thenMany(repository.findAllByModelId(generated.basicModel.id!!))
         // THEN
         foundFlux.collectList()
             .testWithTx()
-            .assertNext { foundModelResources ->
-                assertEquals(modelResources.size, foundModelResources.size)
-                assertTrue(foundModelResources.containsAll(modelResources))
+            .assertNext { foundList ->
+                assertEquals(expectedEntities.size, foundList.size)
+                assertTrue(foundList.containsAll(expectedEntities))
             }
             .verifyComplete()
     }
@@ -99,32 +91,36 @@ class ModelResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingEntityInDB_whenDeleteByModelAndResourceIsCalled_thenItIsExecuted() {
         // GIVEN
-        val model = createBasicModel()
-        val resources = createResourcesForBasicModel()
-        val modelResources = createModelResources(model, resources)
-
-        val insertedMono: Mono<ModelResource> = template
-            .insert(model)
-            .then(template.insertAll(resources))
-            .then(template.insertAll(modelResources))
+        val dbPrepared = fillDatabase()
         // WHEN
-        val expectedModelResources = modelResources.toMutableList()
-        val deletable = expectedModelResources.removeAt(0)
-        val deletedMono = insertedMono
-            .then(modelResourceRepository.deleteByModelIdAndResourceId(
-                deletable.modelId, deletable.resourceId))
+        val expectedEntities = generated.basicModelResources.toMutableList()
+        val deletable = expectedEntities.removeAt(0)
+        val deletedMono = dbPrepared.then(repository
+            .deleteByModelIdAndResourceId(deletable.modelId, deletable.resourceId)
+        )
         // THEN
         deletedMono
-            .thenMany(findAllByModelId(model.id!!))
+            .thenMany(findAllByModelId(generated.basicModel.id!!))
             .collectList()
             .testWithTx()
-            .assertNext { foundModelResources ->
-                assertFalse(foundModelResources.contains(deletable))
-                assertEquals(expectedModelResources.size, foundModelResources.size)
-                assertTrue(foundModelResources.containsAll(expectedModelResources))
+            .assertNext { foundList ->
+                assertFalse(foundList.contains(deletable))
+                assertEquals(expectedEntities.size, foundList.size)
+                assertTrue(foundList.containsAll(expectedEntities))
             }
             .verifyComplete()
     }
+
+    private fun fillDatabase(): Mono<Void> =
+        // Insert data for tests
+        template.insert(generated.basicModel)
+            .then(template.insertAll(generated.basicResources))
+            .then(template.insertAll(generated.basicModelResources))
+            // Add some surrounding data to create a more realistic environment
+            .then(template.insert(generated.superheroModel))
+            .then(template.insertAll(generated.superheroResources))
+            .then(template.insertAll(generated.superheroModelResources))
+            .then()
 
     private fun findAllByModelId(modelId: UUID): Flux<ModelResource> {
         return template.select(ModelResource::class.java)

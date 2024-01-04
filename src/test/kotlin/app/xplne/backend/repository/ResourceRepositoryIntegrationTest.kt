@@ -20,6 +20,8 @@ class ResourceRepositoryIntegrationTest(
     @Autowired private val resourceRepository: ResourceRepository,
     @Autowired private val template: R2dbcEntityTemplate
 ) {
+    private val generated = TestDataGenerator()
+
     @Test
     fun givenNewResource_whenSaveIsCalled_thenItIsInsertedInDB() {
         // GIVEN
@@ -61,7 +63,7 @@ class ResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingResourcesInDB_whenFindAllIsCalled_thenAllAreReturned() {
         // GIVEN
-        val expectedResources: List<Resource> = TestDataGenerator.createResourcesForBasicModel()
+        val expectedResources: List<Resource> = generated.basicResources
         val insertedMono: Mono<Resource> = template.insertAll(expectedResources)
         // WHEN
         val foundFlux: Flux<Resource> = insertedMono
@@ -79,7 +81,7 @@ class ResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingResourcesInDB_whenFindByIdIsCalled_thenOneIsReturned() {
         // GIVEN
-        val existingResources: List<Resource> = TestDataGenerator.createResourcesForBasicModel()
+        val existingResources: List<Resource> = generated.basicResources
         val insertedMono: Mono<Resource> = template.insertAll(existingResources)
         // WHEN
         val expectedResource = existingResources[0]
@@ -95,7 +97,7 @@ class ResourceRepositoryIntegrationTest(
     @Test
     fun givenExistingResourcesInDB_whenDeleteByIdIsCalled_thenItIsExecuted() {
         // GIVEN
-        val existingResources: List<Resource> = TestDataGenerator.createResourcesForBasicModel()
+        val existingResources: List<Resource> = generated.basicResources
         val insertedMono: Mono<Resource> = template.insertAll(existingResources)
         // WHEN
         val expectedResources = existingResources.toMutableList()

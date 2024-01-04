@@ -7,29 +7,39 @@ import app.xplne.backend.model.Resource
 import java.util.UUID.randomUUID
 import kotlin.random.Random
 
-class TestDataGenerator() {
+class TestDataGenerator {
+
+    val allModels by lazy { listOf(basicModel, superheroModel) }
+
+    val basicModel by lazy { Model(randomUUID(), "Basic model") }
+    val basicResources by lazy {
+        listOf(
+            Resource(randomUUID(), "Vigor"),
+            Resource(randomUUID(), "Well-being"),
+            Resource(randomUUID(), "Motivation")
+        )
+    }
+    val basicModelResources by lazy { createModelResources(basicModel, basicResources) }
+    val basicActivities by lazy {
+        listOf(
+            Activity(randomUUID(), "Sleeping"),
+            Activity(randomUUID(), "Workout"),
+            Activity(randomUUID(), "Eating junk food")
+        )
+    }
+
+    val superheroModel by lazy { Model(randomUUID(), "Superhero model") }
+    val superheroResources by lazy {
+        listOf(
+            Resource(randomUUID(), "Superpower")
+        )
+    }
+    val superheroModelResources by lazy { createModelResources(superheroModel, superheroResources) }
+
     companion object {
-        fun createModels() = listOf(
-            createBasicModel(),
-            Model(id = randomUUID(), name = "Advanced model"),
-            Model(id = randomUUID(), name = "Superhero model")
-        )
-
-        fun createBasicModel() = Model(id = randomUUID(), name = "Basic model")
-
-        fun createResourcesForBasicModel() = listOf(
-            Resource(id = randomUUID(), name = "Vigor"),
-            Resource(id = randomUUID(), name = "Well-being"),
-            Resource(id = randomUUID(), name = "Motivation")
-        )
-
         fun createModelResources(model: Model, resources: List<Resource>) =
-            resources.map { ModelResource(model.id!!, it.id!!, Random.nextInt(100).toShort()) }
-
-        fun createActivities() = listOf(
-            Activity(id = randomUUID(), name = "Sleeping"),
-            Activity(id = randomUUID(), name = "Workout"),
-            Activity(id = randomUUID(), name = "Eating junk food")
-        )
+            resources.map {
+                ModelResource(model.id!!, it.id!!, Random.nextInt(100).toShort())
+            }
     }
 }

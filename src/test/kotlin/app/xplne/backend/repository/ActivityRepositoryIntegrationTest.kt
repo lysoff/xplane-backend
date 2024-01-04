@@ -20,6 +20,8 @@ class ActivityRepositoryIntegrationTest(
     @Autowired private val activityRepository: ActivityRepository,
     @Autowired private val template: R2dbcEntityTemplate
 ) {
+    private val generated = TestDataGenerator()
+
     @Test
     fun givenNewActivity_whenSaveIsCalled_thenItIsInsertedInDB() {
         // GIVEN
@@ -61,7 +63,7 @@ class ActivityRepositoryIntegrationTest(
     @Test
     fun givenExistingActivitiesInDB_whenFindAllIsCalled_thenAllAreReturned() {
         // GIVEN
-        val expectedActivities: List<Activity> = TestDataGenerator.createActivities()
+        val expectedActivities: List<Activity> = generated.basicActivities
         val insertedMono: Mono<Activity> = template.insertAll(expectedActivities)
         // WHEN
         val foundFlux: Flux<Activity> = insertedMono
@@ -79,7 +81,7 @@ class ActivityRepositoryIntegrationTest(
     @Test
     fun givenExistingActivitiesInDB_whenFindByIdIsCalled_thenOneIsReturned() {
         // GIVEN
-        val existingActivities: List<Activity> = TestDataGenerator.createActivities()
+        val existingActivities: List<Activity> = generated.basicActivities
         val insertedMono: Mono<Activity> = template.insertAll(existingActivities)
         // WHEN
         val expectedActivity = existingActivities[0]
@@ -95,7 +97,7 @@ class ActivityRepositoryIntegrationTest(
     @Test
     fun givenExistingActivitiesInDB_whenDeleteByIdIsCalled_thenItIsExecuted() {
         // GIVEN
-        val existingActivities: List<Activity> = TestDataGenerator.createActivities()
+        val existingActivities: List<Activity> = generated.basicActivities
         val insertedMono: Mono<Activity> = template.insertAll(existingActivities)
         // WHEN
         val expectedActivities = existingActivities.toMutableList()

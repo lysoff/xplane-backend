@@ -20,6 +20,8 @@ class ModelRepositoryIntegrationTest(
     @Autowired private val modelRepository: ModelRepository,
     @Autowired private val template: R2dbcEntityTemplate
 ) {
+    private val generated = TestDataGenerator()
+    
     @Test
     fun givenNewModel_whenSaveIsCalled_thenItIsInsertedInDB() {
         // GIVEN
@@ -61,7 +63,7 @@ class ModelRepositoryIntegrationTest(
     @Test
     fun givenExistingModelsInDB_whenFindAllIsCalled_thenAllAreReturned() {
         // GIVEN
-        val expectedModels: List<Model> = TestDataGenerator.createModels()
+        val expectedModels: List<Model> = generated.allModels
         val insertedMono: Mono<Model> = template.insertAll(expectedModels)
         // WHEN
         val foundFlux: Flux<Model> = insertedMono
@@ -79,7 +81,7 @@ class ModelRepositoryIntegrationTest(
     @Test
     fun givenExistingModelsInDB_whenFindByIdIsCalled_thenOneIsReturned() {
         // GIVEN
-        val existingModels: List<Model> = TestDataGenerator.createModels()
+        val existingModels: List<Model> = generated.allModels
         val insertedMono: Mono<Model> = template.insertAll(existingModels)
         // WHEN
         val expectedModel = existingModels[0]
@@ -95,7 +97,7 @@ class ModelRepositoryIntegrationTest(
     @Test
     fun givenExistingModelsInDB_whenDeleteByIdIsCalled_thenItIsExecuted() {
         // GIVEN
-        val existingModels: List<Model> = TestDataGenerator.createModels()
+        val existingModels: List<Model> = generated.allModels
         val insertedMono: Mono<Model> = template.insertAll(existingModels)
         // WHEN
         val expectedModels = existingModels.toMutableList()
