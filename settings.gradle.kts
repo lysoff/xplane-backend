@@ -1,1 +1,1 @@
-rootProject.name = "xplne-backend"
+rootProject.name = "xplne-api"

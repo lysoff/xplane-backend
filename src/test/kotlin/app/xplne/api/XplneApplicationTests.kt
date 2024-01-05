@@ -1,10 +1,10 @@
-package app.xplne.backend
+package app.xplne.api
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class XplneBackendApplicationTests {
+class XplneApplicationTests {
 
 	@Test
 	fun contextLoads() {
