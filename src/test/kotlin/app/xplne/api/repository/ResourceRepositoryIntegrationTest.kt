@@ -1,0 +1,102 @@
+package app.xplne.api.repository
+
+import app.xplne.api.annotation.JpaIntegrationTest
+import app.xplne.api.model.Resource
+import app.xplne.api.util.TestData
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.test.context.jdbc.Sql
+import java.util.*
+
+
+@JpaIntegrationTest
+class ResourceRepositoryIntegrationTest(
+    @Autowired val resourceRepository: ResourceRepository,
+    @Autowired val entityManager: TestEntityManager
+) {
+    @Test
+    fun givenNewResource_whenSave_thenInsertInDB() {
+        // GIVEN
+        val resource = Resource(name = "New resource")
+        // WHEN
+        val saved = resourceRepository.save(resource)
+        // THEN
+        assertNotNull(saved.id)
+        assertEquals(resource.name, saved.name)
+        verifyResourceInDb(resource, saved.id!!)
+    }
+
+    @Test
+    @Sql("classpath:sql/insert-basic-model.sql")
+    fun givenResourceInDb_whenSaveItWithChangedName_thenUpdateInDB() {
+        // GIVEN
+        val resourceInDb: Resource = TestData.basicResources[0]
+        // WHEN
+        val changed = resourceInDb.copy(name = "Changed name")
+        val updated = resourceRepository.save(changed)
+        // THEN
+        assertEquals(changed.name, updated.name)
+        verifyResourceInDb(changed, resourceInDb.id!!)
+    }
+
+    @Test
+    fun givenResourceInDb_whenDeleteById_thenItIsDeleted() {
+        // GIVEN
+        val resource = Resource(name = "Resource to delete")
+        entityManager.persistAndFlush(resource)
+        // WHEN
+        resourceRepository.deleteById(resource.id!!)
+        // THEN
+        entityManager.flush()
+        entityManager.clear()
+        val found = entityManager.find(Resource::class.java, resource.id)
+        assertNull(found)
+    }
+
+    @Test
+    @Sql("classpath:sql/insert-basic-model.sql")
+    fun givenDbHasResources_whenFindAll_thenReturnAll() {
+        // GIVEN
+        val expectedResources = TestData.basicResources
+        // WHEN
+        val foundResources: MutableList<Resource> = resourceRepository.findAll()
+        // THEN
+        assertEquals(expectedResources.size, foundResources.size)
+        expectedResources.forEach { expected ->
+            val found = foundResources.find { it == expected }
+            validateResource(expected, found)
+        }
+    }
+
+    @Test
+    @Sql("classpath:sql/insert-basic-model.sql")
+    @Sql("classpath:sql/insert-superhero-model.sql")
+    fun givenDbHasResources_whenFindById_thenReturnIt() {
+        // GIVEN
+        val expected: Resource = TestData.basicResources[0]
+        // WHEN
+        val found = resourceRepository.findByIdOrNull(expected.id!!)
+        // THEN
+        assertNotNull(found)
+        validateResource(expected, found!!)
+    }
+
+    private fun verifyResourceInDb(expected: Resource, id: UUID) {
+        // save and clear persistence context, otherwise entity manager could return the same object as expected
+        entityManager.flush()
+        entityManager.clear()
+        val actual = entityManager.find(Resource::class.java, id)
+        validateResource(expected, actual)
+    }
+
+    private fun validateResource(expectedResource: Resource, actualResource: Resource?) {
+        // assert we don't compare the object with itself
+        assertFalse(expectedResource === actualResource)
+        assertEquals(expectedResource, actualResource)
+        assertEquals(expectedResource.id, actualResource!!.id)
+        assertEquals(expectedResource.name, actualResource.name)
+    }
+}
