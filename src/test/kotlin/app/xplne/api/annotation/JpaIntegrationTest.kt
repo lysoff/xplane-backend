@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Import
 /**
  * Includes configuring Spring context and database in Docker.
  */
-@DataJpaTest
+@DataJpaTest(showSql = false)
 @Import(TestDatabaseConfiguration::class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Target(AnnotationTarget.CLASS)
-annotation class RepositoryIntegrationTest
+annotation class JpaIntegrationTest
