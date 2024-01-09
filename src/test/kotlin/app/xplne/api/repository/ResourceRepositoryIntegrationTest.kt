@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.jdbc.Sql
 import java.util.*
@@ -60,15 +63,34 @@ class ResourceRepositoryIntegrationTest(
     @Sql("classpath:sql/insert-basic-model.sql")
     fun givenDbHasResources_whenFindAll_thenReturnAll() {
         // GIVEN
+        val pageable = PageRequest.of(0, 10, Sort.by("name").ascending())
         val expectedResources = TestData.basicResources
         // WHEN
-        val foundResources: MutableList<Resource> = resourceRepository.findAll()
+        val foundResources: Slice<Resource> = resourceRepository.findAll(pageable)
         // THEN
-        assertEquals(expectedResources.size, foundResources.size)
+        assertTrue(foundResources.isLast)
+        assertEquals(expectedResources.size, foundResources.content.size)
         expectedResources.forEach { expected ->
             val found = foundResources.find { it == expected }
             validateResource(expected, found)
         }
+    }
+
+    @Test
+    @Sql("classpath:sql/insert-basic-model.sql")
+    @Sql("classpath:sql/insert-superhero-model.sql")
+    fun givenDbHasMoreResourcesThanPageSize_whenFindAll_thenReturnFirstPage() {
+        // GIVEN
+        // inserted resources: Vigor, Well-being, Superpower
+        val pageable = PageRequest.of(0, 1, Sort.by("name").ascending())
+        // with page size = 1 and sorting by name first page should contain only "Superpower"
+        val expectedResource = TestData.superpowerResource
+        // WHEN
+        val foundResources: Slice<Resource> = resourceRepository.findAll(pageable)
+        // THEN
+        assertTrue(foundResources.hasNext())
+        assertEquals(1, foundResources.content.size)
+        validateResource(expectedResource, foundResources.first())
     }
 
     @Test

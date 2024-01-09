@@ -14,6 +14,8 @@ class TestData {
     companion object {
         val basicResources: List<Resource> = createBasicResources()
         val basicModel: Model = createBasicModel()
+
+        val superpowerResource = Resource(name = "Superpower", id = UUID.fromString(RESOURCE_SUPERPOWER_ID))
         val superheroModel: Model = createSuperheroModel()
 
         private fun createBasicModel(): Model {
@@ -31,8 +33,7 @@ class TestData {
 
         private fun createSuperheroModel(): Model {
             val model = Model(name = "Superhero Model", id = UUID.fromString(MODEL_SUPERHERO_ID))
-            val resource = Resource(name = "Superpower", id = UUID.fromString(RESOURCE_SUPERPOWER_ID))
-            model.addResource(resource, 99)
+            model.addResource(superpowerResource, 99)
             return model
         }
 
