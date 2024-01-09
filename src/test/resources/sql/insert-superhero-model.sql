@@ -5,4 +5,10 @@ INSERT INTO resource(id, name) VALUES
     ('2b4311ac-028a-439c-94a4-a5cd2f0b5fdb', 'Superpower');
 
 INSERT into model_resource(model_id, resource_id, amount) VALUES
-    ('a4fe64d1-9779-465a-9754-78c683eab335', '2b4311ac-028a-439c-94a4-a5cd2f0b5fdb', 99);   -- Well-being
+    ('a4fe64d1-9779-465a-9754-78c683eab335', '2b4311ac-028a-439c-94a4-a5cd2f0b5fdb', 99);   -- Superpower
+
+INSERT INTO activity(id, name) VALUES
+    ('2d487791-61c2-4ba5-9c13-3c1374835912', 'Flying');
+
+INSERT INTO model_activity(model_id, activity_id) VALUES
+    ('a4fe64d1-9779-465a-9754-78c683eab335', '2d487791-61c2-4ba5-9c13-3c1374835912');   -- Flying

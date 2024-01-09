@@ -11,16 +11,29 @@ import java.util.UUID
 data class Model(
     @Id @UuidGenerator
     var id: UUID? = null,
+
     val name: String,
+
     @OneToMany(
         mappedBy = "model",
         cascade = [CascadeType.ALL],
         orphanRemoval = true)
-    var resources: MutableList<ModelResource> = mutableListOf()
+    var resources: MutableList<ModelResource> = mutableListOf(),
+
+    @OneToMany(
+        mappedBy = "model",
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true)
+    var activities: MutableList<ModelActivity> = mutableListOf()
 ) {
     fun addResource(resource: Resource, amount: Short) {
         val modelResource = ModelResource(this, resource, amount)
         resources.add(modelResource)
+    }
+
+    fun addActivity(activity: Activity) {
+        val modelActivity = ModelActivity(this, activity)
+        activities.add(modelActivity)
     }
 
     override fun equals(other: Any?): Boolean {
