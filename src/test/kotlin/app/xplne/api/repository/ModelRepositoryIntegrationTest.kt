@@ -1,9 +1,7 @@
 package app.xplne.api.repository
 
 import app.xplne.api.annotation.JpaIntegrationTest
-import app.xplne.api.model.Model
-import app.xplne.api.model.ModelResource
-import app.xplne.api.model.Resource
+import app.xplne.api.model.*
 import app.xplne.api.util.TestData
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -24,11 +22,7 @@ class ModelRepositoryIntegrationTest(
     fun givenNewModel_whenSave_thenInsertInDB() {
         // GIVEN
         val model = Model(name = "New model")
-        // reuse existing resources created for Basic Model
-        TestData.basicResources.forEach {
-            val foundResource = entityManager.find(Resource::class.java, it.id)
-            model.addResource(foundResource, 100)
-        }
+        copyActivitiesAndResources(model, TestData.basicModel)
         // WHEN
         val saved = modelRepository.save(model)
         // THEN
@@ -75,13 +69,9 @@ class ModelRepositoryIntegrationTest(
         // THEN
         val found = entityManager.find(Model::class.java, modelToDelete.id)
         assertNull(found)
-        // assert resources were not deleted, only connections with model
-        modelToDelete.resources.forEach {
-            val foundModelResource = entityManager.find(ModelResource::class.java, it.id)
-            assertNull(foundModelResource)
-            val foundResource = entityManager.find(Resource::class.java, it.resource.id)
-            assertNotNull(foundResource)
-        }
+        // assert dictionary records were not deleted, only connections with them
+        assertResourcesNotDeleted(modelToDelete)
+        assertActivitiesNotDeleted(modelToDelete)
     }
 
     @Test
@@ -124,7 +114,9 @@ class ModelRepositoryIntegrationTest(
         assertEquals(expectedModel, actualModel)
         assertEquals(expectedModel.id, actualModel.id)
         assertEquals(expectedModel.name, actualModel.name)
+
         validateModelResources(expectedModel.resources, actualModel.resources)
+        validateModelActivities(expectedModel.activities, actualModel.activities)
     }
 
     private fun validateModelResources(
@@ -137,6 +129,46 @@ class ModelRepositoryIntegrationTest(
             assertNotNull(foundResource)
             assertEquals(expectedResource, foundResource)
             assertEquals(expectedResource.amount, foundResource!!.amount)
+        }
+    }
+
+    private fun validateModelActivities(
+        expectedActivities: List<ModelActivity>,
+        actualActivities: List<ModelActivity>
+    ) {
+        assertEquals(expectedActivities.size, actualActivities.size)
+        expectedActivities.forEach { expectedResource ->
+            val foundResource = actualActivities.find { expectedResource.id!! == it.id }
+            assertNotNull(foundResource)
+            assertEquals(expectedResource, foundResource)
+        }
+    }
+
+    private fun copyActivitiesAndResources(targetModel: Model, sourceModel: Model) {
+        val basicModel = entityManager.find(Model::class.java, sourceModel.id)
+        basicModel.resources.forEach { modelResource ->
+            targetModel.addResource(modelResource.resource, modelResource.amount)
+        }
+        basicModel.activities.forEach { basicModelActivity ->
+            targetModel.addActivity(basicModelActivity.activity)
+        }
+    }
+
+    private fun assertResourcesNotDeleted(deletedModel: Model) {
+        deletedModel.resources.forEach {
+            val foundModelResource = entityManager.find(ModelResource::class.java, it.id)
+            assertNull(foundModelResource)
+            val foundResource = entityManager.find(Resource::class.java, it.resource.id)
+            assertNotNull(foundResource)
+        }
+    }
+
+    private fun assertActivitiesNotDeleted(deletedModel: Model) {
+        deletedModel.activities.forEach {
+            val modelActivity = entityManager.find(ModelActivity::class.java, it.id)
+            assertNull(modelActivity)
+            val activity = entityManager.find(Activity::class.java, it.activity.id)
+            assertNotNull(activity)
         }
     }
 }
