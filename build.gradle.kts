@@ -23,6 +23,7 @@ repositories {
 val hypersistenceVersion = "3.7.0"
 val springdocVersion = "2.3.0"
 val mapstructVersion = "1.5.5.Final"
+val mockkVersion = "1.13.9"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -40,6 +41,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:postgresql")
+	testImplementation("io.mockk:mockk:$mockkVersion")
 }
 
 tasks.withType<KotlinCompile> {
