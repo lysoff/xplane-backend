@@ -2,17 +2,19 @@ package app.xplne.api.repository
 
 import app.xplne.api.annotation.JpaIntegrationTest
 import app.xplne.api.model.Activity
+import app.xplne.api.repository.common.findByIdOrNull
 import app.xplne.api.util.ACTIVITY_EAT_JUNK_FOOD_ID
 import app.xplne.api.util.TestData
 import app.xplne.api.util.TestData.Companion.getBasicActivity
+import jakarta.persistence.OptimisticLockException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.Sort
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.jdbc.Sql
 import java.util.*
 
@@ -23,11 +25,11 @@ class ActivityRepositoryIntegrationTest(
     @Autowired val entityManager: TestEntityManager
 ) {
     @Test
-    fun givenNewActivity_whenSave_thenInsertInDB() {
+    fun givenNewActivity_whenPersist_thenInsertInDB() {
         // GIVEN
         val activity = Activity(name = "New activity")
         // WHEN
-        val saved = activityRepository.save(activity)
+        val saved = activityRepository.persist(activity)
         // THEN
         assertNotNull(saved.id)
         assertEquals(activity.name, saved.name)
@@ -36,15 +38,26 @@ class ActivityRepositoryIntegrationTest(
 
     @Test
     @Sql("classpath:sql/insert-basic-model.sql")
-    fun givenActivityInDb_whenSaveItWithChangedName_thenUpdateInDB() {
+    fun givenActivityInDb_whenUpdateChangedName_thenUpdateInDB() {
         // GIVEN
-        val activityInDb: Activity = TestData.basicActivities[0]
+        val activityInDb: Activity = TestData.getBasicActivities()[0]
         // WHEN
         val changed = activityInDb.copy(name = "Changed name")
-        val updated = activityRepository.save(changed)
+        val updated = activityRepository.update(changed)
         // THEN
         assertEquals(changed.name, updated.name)
         verifyActivityInDb(changed, activityInDb.id!!)
+    }
+
+    @Test
+    fun givenNonExistingId_whenUpdate_thenThrow() {
+        // GIVEN
+        val nonExisting = Activity(UUID.randomUUID(), "Non-existing activity")
+        // WHEN-THEN
+        assertThrows<OptimisticLockException> {
+            activityRepository.update(nonExisting)
+            entityManager.flush()
+        }
     }
 
     @Test
@@ -66,7 +79,7 @@ class ActivityRepositoryIntegrationTest(
     fun givenDbHasActivities_whenFindAll_thenReturnAll() {
         // GIVEN
         val pageable = PageRequest.of(0, 10, Sort.by("name").ascending())
-        val expectedActivities = TestData.basicActivities
+        val expectedActivities = TestData.getBasicActivities()
         // WHEN
         val foundActivities: Slice<Activity> = activityRepository.findAll(pageable)
         // THEN
@@ -99,7 +112,7 @@ class ActivityRepositoryIntegrationTest(
     @Sql("classpath:sql/insert-superhero-model.sql")
     fun givenDbHasActivities_whenFindById_thenReturnIt() {
         // GIVEN
-        val expected: Activity = TestData.basicActivities[0]
+        val expected: Activity = TestData.getBasicActivities()[0]
         // WHEN
         val found = activityRepository.findByIdOrNull(expected.id!!)
         // THEN

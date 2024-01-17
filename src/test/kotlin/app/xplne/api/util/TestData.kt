@@ -18,48 +18,46 @@ private const val ACTIVITY_FLYING_ID        = "2d487791-61c2-4ba5-9c13-3c1374835
 
 class TestData {
     companion object {
-        val basicResources: List<Resource> = createBasicResources()
-        val basicActivities: List<Activity> = createBasicActivities()
-        val basicModel: Model = createBasicModel()
-
-        val superpowerResource = Resource(name = "Superpower", id = UUID.fromString(RESOURCE_SUPERPOWER_ID))
-        private val superheroActivity = Activity(name = "Flying", id = UUID.fromString(ACTIVITY_FLYING_ID))
-        val superheroModel: Model = createSuperheroModel()
-
         fun getBasicActivity(uuidAsString: String): Activity {
-            val activity = basicActivities.find {
+            val activity = getBasicActivities().find {
                 it.id == UUID.fromString(uuidAsString) }
             Assertions.assertNotNull(activity)
             return activity!!
         }
 
-        private fun createBasicModel(): Model {
+        fun getBasicModel(): Model {
             val basicModel = Model(name = "Basic Model", id = UUID.fromString(MODEL_BASIC_ID))
 
-            val idToResourceMap: Map<String, Resource> = mapResourcesByTheirIds(basicResources)
+            val idToResourceMap: Map<String, Resource> = mapResourcesByTheirIds(getBasicResources())
             basicModel.addResource(idToResourceMap[RESOURCE_VIGOR_ID]!!, 100)
             basicModel.addResource(idToResourceMap[RESOURCE_WELL_BEING_ID]!!, 50)
 
-            basicActivities.forEach(basicModel::addActivity)
+            getBasicActivities().forEach(basicModel::addActivity)
             return basicModel
         }
 
-        private fun createBasicResources(): List<Resource> = listOf(
+        fun getBasicResources(): List<Resource> = listOf(
             Resource(name = "Vigor", id = UUID.fromString(RESOURCE_VIGOR_ID)),
             Resource(name = "Well-being", id = UUID.fromString(RESOURCE_WELL_BEING_ID))
         )
 
-        private fun createBasicActivities(): List<Activity> = listOf(
+        fun getBasicActivities(): List<Activity> = listOf(
             Activity(name = "Workout", id = UUID.fromString(ACTIVITY_WORKOUT_ID)),
             Activity(name = "Eating junk food", id = UUID.fromString(ACTIVITY_EAT_JUNK_FOOD_ID))
         )
 
-        private fun createSuperheroModel(): Model {
+        fun getSuperheroModel(): Model {
             val model = Model(name = "Superhero Model", id = UUID.fromString(MODEL_SUPERHERO_ID))
-            model.addResource(superpowerResource, 99)
-            model.addActivity(superheroActivity)
+            model.addResource(getSuperpowerResource(), 99)
+            model.addActivity(getSuperheroActivity())
             return model
         }
+
+        fun getSuperpowerResource() =
+            Resource(name = "Superpower", id = UUID.fromString(RESOURCE_SUPERPOWER_ID))
+
+        private fun getSuperheroActivity() =
+            Activity(name = "Flying", id = UUID.fromString(ACTIVITY_FLYING_ID))
 
         private fun mapResourcesByTheirIds(resources: List<Resource>) =
             resources.associateBy { it.id.toString() }
