@@ -7,6 +7,7 @@ import app.xplne.api.util.TestData
 import jakarta.persistence.OptimisticLockException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 import org.springframework.data.domain.PageRequest
@@ -51,7 +52,7 @@ class ResourceRepositoryIntegrationTest(
         // GIVEN
         val nonExisting = Resource(UUID.randomUUID(), "Non-existing resource")
         // WHEN-THEN
-        org.junit.jupiter.api.assertThrows<OptimisticLockException> {
+        assertThrows<OptimisticLockException> {
             resourceRepository.update(nonExisting)
             entityManager.flush()
         }

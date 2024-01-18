@@ -24,6 +24,7 @@ val hypersistenceVersion = "3.7.0"
 val springdocVersion = "2.3.0"
 val mapstructVersion = "1.5.5.Final"
 val mockkVersion = "1.13.9"
+val springMockkVersion = "4.0.2"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -37,11 +38,14 @@ dependencies {
 	kapt("org.mapstruct:mapstruct-processor:$mapstructVersion")
 	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 	runtimeOnly("org.postgresql:postgresql")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-test") {
+		exclude(module = "mockito-core")
+	}
+	testImplementation("io.mockk:mockk:$mockkVersion")
+	testImplementation("com.ninja-squad:springmockk:$springMockkVersion")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:postgresql")
-	testImplementation("io.mockk:mockk:$mockkVersion")
 }
 
 tasks.withType<KotlinCompile> {
