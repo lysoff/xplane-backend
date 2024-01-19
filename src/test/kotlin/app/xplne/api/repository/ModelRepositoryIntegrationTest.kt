@@ -1,6 +1,7 @@
 package app.xplne.api.repository
 
 import app.xplne.api.annotation.JpaIntegrationTest
+import app.xplne.api.dto.ModelShortView
 import app.xplne.api.model.*
 import app.xplne.api.repository.common.findByIdOrNull
 import app.xplne.api.util.TestData
@@ -8,8 +9,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Slice
 import org.springframework.test.context.jdbc.Sql
 import java.util.*
 
@@ -81,13 +80,16 @@ class ModelRepositoryIntegrationTest(
     @Sql("classpath:sql/insert-superhero-model.sql")
     fun givenDbHasModels_whenFindAll_thenReturnAll() {
         // GIVEN
-        val expectedModels = listOf(TestData.getBasicModel(), TestData.getSuperheroModel())
+        val existingModels = listOf(TestData.getBasicModel(), TestData.getSuperheroModel())
         // WHEN
-        val modelsSlice: Slice<Model> = modelRepository.findAll(Pageable.ofSize(10))
-        val foundModels = modelsSlice.content
+        val repoOutput: List<ModelShortView> = modelRepository.findAllBy()
         // THEN
-        assertEquals(expectedModels.size, foundModels.size)
-        assertTrue(expectedModels.containsAll(foundModels))
+        assertEquals(existingModels.size, repoOutput.size)
+        existingModels.forEachIndexed{index: Int, model: Model ->
+            val shortView: ModelShortView = repoOutput[index]
+            assertEquals(model.id, shortView.getId())
+            assertEquals(model.name, shortView.getName())
+        }
     }
 
     @Test
