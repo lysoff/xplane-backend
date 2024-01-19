@@ -5,13 +5,13 @@ import app.xplne.api.dto.ActivityDto
 import app.xplne.api.exception.NotFoundException
 import app.xplne.api.mapper.ActivityMapper
 import app.xplne.api.repository.ActivityRepository
+import app.xplne.api.repository.common.findByIdOrNull
 import org.mapstruct.factory.Mappers
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 class ActivityService(
@@ -25,8 +25,7 @@ class ActivityService(
     }
 
     fun findByIdOrNull(activityId: UUID): ActivityDto? {
-        return activityRepository.findById(activityId)
-            .getOrNull()
+        return activityRepository.findByIdOrNull(activityId)
             .run(mapper::toDto)
     }
 

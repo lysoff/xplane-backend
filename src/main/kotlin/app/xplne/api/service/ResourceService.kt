@@ -5,13 +5,13 @@ import app.xplne.api.dto.ResourceDto
 import app.xplne.api.exception.NotFoundException
 import app.xplne.api.mapper.ResourceMapper
 import app.xplne.api.repository.ResourceRepository
+import app.xplne.api.repository.common.findByIdOrNull
 import org.mapstruct.factory.Mappers
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 class ResourceService(
@@ -25,8 +25,7 @@ class ResourceService(
     }
 
     fun findByIdOrNull(resourceId: UUID): ResourceDto? {
-        return resourceRepository.findById(resourceId)
-            .getOrNull()
+        return resourceRepository.findByIdOrNull(resourceId)
             .run(mapper::toDto)
     }
 
