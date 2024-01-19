@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size
 import java.util.*
 
 data class ActivityDto(
-    val id: UUID?,
+    var id: UUID?,
     @NotBlank @Size(min = 1, max = 128)
     val name: String
 )

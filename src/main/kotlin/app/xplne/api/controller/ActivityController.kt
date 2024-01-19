@@ -1,6 +1,6 @@
 package app.xplne.api.controller
 
-import app.xplne.api.constants.BASE_PATH_ACTIVITY
+import app.xplne.api.constants.BASE_PATH_ACTIVITIES
 import app.xplne.api.constants.ENTITY_NOT_FOUND
 import app.xplne.api.constants.ENTITY_UPDATED
 import app.xplne.api.constants.PATH_ACTIVITY_ID
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-@RequestMapping(BASE_PATH_ACTIVITY)
+@RequestMapping(BASE_PATH_ACTIVITIES)
 @Tag(name = "Activities")
 class ActivityController(
     private val activityService: ActivityService
@@ -41,8 +41,10 @@ class ActivityController(
     fun updateActivity(
         @PathVariable activityId: UUID,
         @RequestBody dto: ActivityDto
-    ): ActivityDto =
-        activityService.update(dto)
+    ): ActivityDto {
+        dto.id = activityId
+        return activityService.update(dto)
+    }
 
     @GetMapping(PATH_ACTIVITY_ID)
     @Operation(summary = "Get activity by ID")

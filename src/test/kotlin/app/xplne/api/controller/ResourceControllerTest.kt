@@ -1,10 +1,10 @@
 package app.xplne.api.controller
 
-import app.xplne.api.constants.BASE_PATH_ACTIVITIES
-import app.xplne.api.constants.PATH_ACTIVITY_ID
-import app.xplne.api.dto.ActivityDto
+import app.xplne.api.constants.BASE_PATH_RESOURCES
+import app.xplne.api.constants.PATH_RESOURCE_ID
+import app.xplne.api.dto.ResourceDto
 import app.xplne.api.exception.NotFoundException
-import app.xplne.api.service.ActivityService
+import app.xplne.api.service.ResourceService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.Runs
@@ -24,119 +24,119 @@ import org.springframework.test.web.servlet.*
 import java.util.*
 
 
-@WebMvcTest(ActivityController::class)
+@WebMvcTest(ResourceController::class)
 @ExtendWith(MockKExtension::class)
 @MockKExtension.ConfirmVerification
-class ActivityControllerTest {
+class ResourceControllerTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
 
     @MockkBean
-    private lateinit var activityService: ActivityService
+    private lateinit var resourceService: ResourceService
 
     private var mapper = ObjectMapper()
 
     @Test
-    fun givenTwoActivities_whenGetAll_thenReturnAllWith200() {
+    fun givenTwoResources_whenGetAll_thenReturnAllWith200() {
         // GIVEN
-        val activities = listOf(
-            ActivityDto(UUID.randomUUID(), "Activity 1"),
-            ActivityDto(UUID.randomUUID(), "Activity 2"))
-        val paged: Slice<ActivityDto> = SliceImpl(activities, Pageable.ofSize(10), false)
+        val resources = listOf(
+            ResourceDto(UUID.randomUUID(), "Resource 1"),
+            ResourceDto(UUID.randomUUID(), "Resource 2"))
+        val paged: Slice<ResourceDto> = SliceImpl(resources, Pageable.ofSize(10), false)
 
-        every { activityService.findAll(any<Pageable>()) } returns paged
+        every { resourceService.findAll(any<Pageable>()) } returns paged
         // WHEN-THEN
-        mockMvc.get(BASE_PATH_ACTIVITIES) {
+        mockMvc.get(BASE_PATH_RESOURCES) {
             param("size", paged.size.toString())
         }.andExpect {
             status { isOk() }
             content {
                 contentType(MediaType.APPLICATION_JSON)
                 assertJsonHasPageData(paged)
-                activities.forEachIndexed { index, dto ->
+                resources.forEachIndexed { index, dto ->
                     jsonPath("$.content[$index].id") { value(dto.id.toString()) }
                     jsonPath("$.content[$index].name") { value(dto.name) }
                 }
             }
         }
-        verify(exactly = 1) { activityService.findAll(any<Pageable>()) }
+        verify(exactly = 1) { resourceService.findAll(any<Pageable>()) }
     }
 
     @Test
-    fun givenNewActivity_whenPostCreate_thenReturnItWith200() {
+    fun givenNewResource_whenPostCreate_thenReturnItWith200() {
         // GIVEN
-        val dto = ActivityDto(UUID.randomUUID(), "Activity name")
-        every { activityService.create(any<ActivityDto>()) } returns dto
+        val dto = ResourceDto(UUID.randomUUID(), "Resource name")
+        every { resourceService.create(any<ResourceDto>()) } returns dto
         // WHEN-THEN
-        mockMvc.post(BASE_PATH_ACTIVITIES) {
+        mockMvc.post(BASE_PATH_RESOURCES) {
             contentType = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(dto)
         }.andExpect {
             status { isOk() }
-            assertContainsActivityDto(dto)
+            assertContainsResourceDto(dto)
         }
-        verify(exactly = 1) { activityService.create(any<ActivityDto>()) }
+        verify(exactly = 1) { resourceService.create(any<ResourceDto>()) }
     }
 
     @Test
-    fun givenExistingActivity_whenPutUpdate_thenReturnItWith200() {
+    fun givenExistingResource_whenPutUpdate_thenReturnItWith200() {
         // GIVEN
-        val dto = ActivityDto(UUID.randomUUID(), "Activity name")
-        every { activityService.update(any<ActivityDto>()) } returns dto
+        val dto = ResourceDto(UUID.randomUUID(), "Resource name")
+        every { resourceService.update(any<ResourceDto>()) } returns dto
         // WHEN-THEN
-        val url = BASE_PATH_ACTIVITIES + PATH_ACTIVITY_ID
+        val url = BASE_PATH_RESOURCES + PATH_RESOURCE_ID
         mockMvc.put(url, dto.id) {
             contentType = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(dto)
         }.andExpect {
             status { isOk() }
-            assertContainsActivityDto(dto)
+            assertContainsResourceDto(dto)
         }
-        verify(exactly = 1) { activityService.update(any<ActivityDto>()) }
+        verify(exactly = 1) { resourceService.update(any<ResourceDto>()) }
     }
 
     @Test
-    fun givenActivityDoesNotExist_whenPutUpdate_thenReturn404() {
+    fun givenResourceDoesNotExist_whenPutUpdate_thenReturn404() {
         // GIVEN
-        val dto = ActivityDto(UUID.randomUUID(), "Not existing activity")
-        every { activityService.update(any<ActivityDto>()) } throws NotFoundException("Error")
+        val dto = ResourceDto(UUID.randomUUID(), "Not existing resource")
+        every { resourceService.update(any<ResourceDto>()) } throws NotFoundException("Error")
         // WHEN-THEN
-        val url = BASE_PATH_ACTIVITIES + PATH_ACTIVITY_ID
+        val url = BASE_PATH_RESOURCES + PATH_RESOURCE_ID
         mockMvc.put(url, dto.id) {
             contentType = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(dto)
         }.andExpect {
             status { isNotFound() }
         }
-        verify(exactly = 1) { activityService.update(any<ActivityDto>()) }
+        verify(exactly = 1) { resourceService.update(any<ResourceDto>()) }
     }
 
     @Test
     fun givenExistingId_whenGetById_thenReturnItWith200() {
         // GIVEN
-        val dto = ActivityDto(UUID.randomUUID(), "Activity name")
-        every { activityService.findByIdOrNull(dto.id!!) } returns dto
+        val dto = ResourceDto(UUID.randomUUID(), "Resource name")
+        every { resourceService.findByIdOrNull(dto.id!!) } returns dto
         // WHEN-THEN
-        val url = BASE_PATH_ACTIVITIES + PATH_ACTIVITY_ID
+        val url = BASE_PATH_RESOURCES + PATH_RESOURCE_ID
         mockMvc.get(url, dto.id).andExpect {
             status { isOk() }
-            assertContainsActivityDto(dto)
+            assertContainsResourceDto(dto)
         }
-        verify(exactly = 1) { activityService.findByIdOrNull(dto.id!!) }
+        verify(exactly = 1) { resourceService.findByIdOrNull(dto.id!!) }
     }
 
     @Test
     fun givenExistingId_whenDelete_thenReturn200() {
         // GIVEN
         val id = UUID.randomUUID()
-        every { activityService.deleteById(id) } just Runs
+        every { resourceService.deleteById(id) } just Runs
         // WHEN-THEN
-        val url = BASE_PATH_ACTIVITIES + PATH_ACTIVITY_ID
+        val url = BASE_PATH_RESOURCES + PATH_RESOURCE_ID
         mockMvc.delete(url, id).andExpect {
             status { isOk() }
         }
-        verify(exactly = 1) { activityService.deleteById(id) }
+        verify(exactly = 1) { resourceService.deleteById(id) }
     }
 
     private fun <T> MockMvcResultMatchersDsl.assertJsonHasPageData(page: Slice<T>) {
@@ -147,7 +147,7 @@ class ActivityControllerTest {
         jsonPath("$.content.length()") { page.content.size }
     }
 
-    private fun MockMvcResultMatchersDsl.assertContainsActivityDto(dto: ActivityDto) {
+    private fun MockMvcResultMatchersDsl.assertContainsResourceDto(dto: ResourceDto) {
         content {
             contentType(MediaType.APPLICATION_JSON)
             jsonPath("$.id") { value(dto.id.toString()) }
