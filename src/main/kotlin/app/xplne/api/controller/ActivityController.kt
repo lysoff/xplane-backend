@@ -1,18 +1,21 @@
 package app.xplne.api.controller
 
-import app.xplne.api.constants.BASE_PATH_ACTIVITIES
-import app.xplne.api.constants.ENTITY_NOT_FOUND
-import app.xplne.api.constants.ENTITY_UPDATED
-import app.xplne.api.constants.PATH_ACTIVITY_ID
+import app.xplne.api.constants.*
 import app.xplne.api.dto.ActivityDto
+import app.xplne.api.dto.ErrorResponseDto
+import app.xplne.api.dto.scope.Basic
+import app.xplne.api.dto.scope.OnCreate
 import app.xplne.api.service.ActivityService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -29,18 +32,28 @@ class ActivityController(
 
     @PostMapping
     @Operation(summary = "Create activity")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = ENTITY_UPDATED),
+        ApiResponse(responseCode = "400", description = DTO_VALIDATION_FAILED,
+            content = [Content(schema = Schema(implementation = ErrorResponseDto::class))]),
+        ApiResponse(responseCode = "404", description = ENTITY_NOT_FOUND, content = [Content()]),
+    )
     fun createActivity(
-        @RequestBody dto: ActivityDto
+        @RequestBody @Validated(OnCreate::class) dto: ActivityDto
     ): ActivityDto =
         activityService.create(dto)
 
     @PutMapping(PATH_ACTIVITY_ID)
     @Operation(summary = "Update activity")
-    @ApiResponse(responseCode = "200", description = ENTITY_UPDATED)
-    @ApiResponse(responseCode = "404", description = ENTITY_NOT_FOUND, content = [Content()])
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = ENTITY_UPDATED),
+        ApiResponse(responseCode = "400", description = DTO_VALIDATION_FAILED,
+            content = [Content(schema = Schema(implementation = ErrorResponseDto::class))]),
+        ApiResponse(responseCode = "404", description = ENTITY_NOT_FOUND, content = [Content()]),
+    )
     fun updateActivity(
         @PathVariable activityId: UUID,
-        @RequestBody dto: ActivityDto
+        @RequestBody @Validated(Basic::class) dto: ActivityDto
     ): ActivityDto {
         dto.id = activityId
         return activityService.update(dto)
