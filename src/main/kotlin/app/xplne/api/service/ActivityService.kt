@@ -1,5 +1,6 @@
 package app.xplne.api.service
 
+import app.xplne.api.constants.ENTITY_NOT_FOUND
 import app.xplne.api.dto.ActivityDto
 import app.xplne.api.exception.NotFoundException
 import app.xplne.api.mapper.ActivityMapper
@@ -39,7 +40,7 @@ class ActivityService(
         val updated = try {
             activityRepository.update(entity)
         } catch (ex: ObjectOptimisticLockingFailureException) {
-            throw NotFoundException("Entity with provided does not exist", ex)
+            throw NotFoundException(ENTITY_NOT_FOUND, ex)
         }
         return updated.run(mapper::toDto)!!
     }

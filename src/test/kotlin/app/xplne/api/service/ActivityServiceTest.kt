@@ -1,6 +1,7 @@
 package app.xplne.api.service
 
 import app.xplne.api.dto.ActivityDto
+import app.xplne.api.exception.NotFoundException
 import app.xplne.api.mapper.ActivityMapper
 import app.xplne.api.model.Activity
 import app.xplne.api.repository.ActivityRepository
@@ -10,11 +11,16 @@ import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.data.domain.*
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.test.util.ReflectionTestUtils
 import java.util.*
 
@@ -37,7 +43,7 @@ class ActivityServiceTest {
     }
 
     @Test
-    fun findAll() {
+    fun givenActivities_whenFindAll_thenReturnPageFromRepo() {
         // GIVEN
         val pageable = Pageable.ofSize(10)
         val activitiesList = TestData.getBasicActivities()
@@ -53,7 +59,7 @@ class ActivityServiceTest {
     }
 
     @Test
-    fun findByIdOrNull() {
+    fun givenExistingActivity_whenFindById_thenReturnDtoFromRepo() {
         // GIVEN
         val id = UUID.randomUUID()
         val activityDto = mockkClass(ActivityDto::class)
@@ -69,7 +75,7 @@ class ActivityServiceTest {
     }
 
     @Test
-    fun create() {
+    fun givenNewActivity_whenCreate_thenReturnRepoResult() {
         // GIVEN
         val activityDto = mockkClass(ActivityDto::class)
         val activity = mockkClass(Activity::class)
@@ -86,7 +92,7 @@ class ActivityServiceTest {
     }
 
     @Test
-    fun update() {
+    fun givenExistingActivity_whenUpdate_thenReturnRepoResult() {
         // GIVEN
         val activityDto = mockkClass(ActivityDto::class)
         val activity = mockkClass(Activity::class)
@@ -103,7 +109,23 @@ class ActivityServiceTest {
     }
 
     @Test
-    fun deleteById() {
+    fun givenActivityDoesNotExist_whenUpdate_thenReturnRepoResult() {
+        // GIVEN
+        val activityDto = mockkClass(ActivityDto::class)
+        val activity = mockkClass(Activity::class)
+        every { activityMapper.toEntity(activityDto) } returns activity
+        every { activityRepository.update(activity) } throws
+                ObjectOptimisticLockingFailureException(Activity::class.java, UUID.randomUUID())
+        // WHEN-THEN
+        assertThrows<NotFoundException> {
+            activityService.update(activityDto)
+        }
+        verify(exactly = 1) { activityMapper.toEntity(activityDto) }
+        verify(exactly = 1) { activityRepository.update(activity) }
+    }
+
+    @Test
+    fun givenExistingActivity_whenDeleteById_thenCallRepo() {
         // GIVEN
         val id = UUID.randomUUID()
         every { activityRepository.deleteById(id) } just Runs

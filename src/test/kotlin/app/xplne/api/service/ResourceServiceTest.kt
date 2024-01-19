@@ -1,6 +1,7 @@
 package app.xplne.api.service
 
 import app.xplne.api.dto.ResourceDto
+import app.xplne.api.exception.NotFoundException
 import app.xplne.api.mapper.ResourceMapper
 import app.xplne.api.model.Resource
 import app.xplne.api.repository.ResourceRepository
@@ -10,11 +11,16 @@ import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.data.domain.*
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.test.util.ReflectionTestUtils
 import java.util.*
 
@@ -37,7 +43,7 @@ class ResourceServiceTest {
     }
 
     @Test
-    fun findAll() {
+    fun givenResources_whenFindAll_thenReturnPageFromRepo() {
         // GIVEN
         val pageable = Pageable.ofSize(10)
         val resourcesList = TestData.getBasicResources()
@@ -53,7 +59,7 @@ class ResourceServiceTest {
     }
 
     @Test
-    fun findByIdOrNull() {
+    fun givenExistingResource_whenFindById_thenReturnDtoFromRepo() {
         // GIVEN
         val id = UUID.randomUUID()
         val resourceDto = mockkClass(ResourceDto::class)
@@ -69,7 +75,7 @@ class ResourceServiceTest {
     }
 
     @Test
-    fun create() {
+    fun givenNewResource_whenCreate_thenReturnRepoResult() {
         // GIVEN
         val resourceDto = mockkClass(ResourceDto::class)
         val resource = mockkClass(Resource::class)
@@ -86,7 +92,7 @@ class ResourceServiceTest {
     }
 
     @Test
-    fun update() {
+    fun givenExistingResource_whenUpdate_thenReturnRepoResult() {
         // GIVEN
         val resourceDto = mockkClass(ResourceDto::class)
         val resource = mockkClass(Resource::class)
@@ -103,7 +109,23 @@ class ResourceServiceTest {
     }
 
     @Test
-    fun deleteById() {
+    fun givenResourceDoesNotExist_whenUpdate_thenReturnRepoResult() {
+        // GIVEN
+        val resourceDto = mockkClass(ResourceDto::class)
+        val resource = mockkClass(Resource::class)
+        every { resourceMapper.toEntity(resourceDto) } returns resource
+        every { resourceRepository.update(resource) } throws
+                ObjectOptimisticLockingFailureException(Resource::class.java, UUID.randomUUID())
+        // WHEN-THEN
+        assertThrows<NotFoundException> {
+            resourceService.update(resourceDto)
+        }
+        verify(exactly = 1) { resourceMapper.toEntity(resourceDto) }
+        verify(exactly = 1) { resourceRepository.update(resource) }
+    }
+
+    @Test
+    fun givenExistingResource_whenDeleteById_thenCallRepo() {
         // GIVEN
         val id = UUID.randomUUID()
         every { resourceRepository.deleteById(id) } just Runs
