@@ -87,8 +87,8 @@ class ModelRepositoryIntegrationTest(
         assertEquals(existingModels.size, repoOutput.size)
         existingModels.forEachIndexed{index: Int, model: Model ->
             val shortView: ModelShortView = repoOutput[index]
-            assertEquals(model.id, shortView.getId())
-            assertEquals(model.name, shortView.getName())
+            assertEquals(model.id, shortView.id)
+            assertEquals(model.name, shortView.name)
         }
     }
 

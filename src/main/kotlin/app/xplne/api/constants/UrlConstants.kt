@@ -2,6 +2,9 @@ package app.xplne.api.constants
 
 const val PATH_API_V1 = "/v1"
 
+const val BASE_PATH_MODELS = "$PATH_API_V1/models"
+const val PATH_MODEL_ID = "/{modelId}"
+
 const val BASE_PATH_ACTIVITIES = "$PATH_API_V1/activities"
 const val PATH_ACTIVITY_ID = "/{activityId}"
 

@@ -3,6 +3,6 @@ package app.xplne.api.dto
 import java.util.*
 
 interface ModelShortView {
-    fun getId(): UUID
-    fun getName(): String
+    var id: UUID
+    var name: String
 }
