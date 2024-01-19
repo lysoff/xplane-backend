@@ -6,7 +6,6 @@ import app.xplne.api.repository.common.findByIdOrNull
 import app.xplne.api.util.ACTIVITY_EAT_JUNK_FOOD_ID
 import app.xplne.api.util.TestData
 import app.xplne.api.util.TestData.Companion.getBasicActivity
-import jakarta.persistence.OptimisticLockException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -15,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.Sort
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.test.context.jdbc.Sql
 import java.util.*
 
@@ -54,9 +54,9 @@ class ActivityRepositoryIntegrationTest(
         // GIVEN
         val nonExisting = Activity(UUID.randomUUID(), "Non-existing activity")
         // WHEN-THEN
-        assertThrows<OptimisticLockException> {
+        assertThrows<ObjectOptimisticLockingFailureException> {
             activityRepository.update(nonExisting)
-            entityManager.flush()
+            activityRepository.flush()
         }
     }
 

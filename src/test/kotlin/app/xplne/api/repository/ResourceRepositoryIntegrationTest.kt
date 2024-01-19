@@ -4,7 +4,6 @@ import app.xplne.api.annotation.JpaIntegrationTest
 import app.xplne.api.model.Resource
 import app.xplne.api.repository.common.findByIdOrNull
 import app.xplne.api.util.TestData
-import jakarta.persistence.OptimisticLockException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -13,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.Sort
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.test.context.jdbc.Sql
 import java.util.*
 
@@ -52,9 +52,9 @@ class ResourceRepositoryIntegrationTest(
         // GIVEN
         val nonExisting = Resource(UUID.randomUUID(), "Non-existing resource")
         // WHEN-THEN
-        assertThrows<OptimisticLockException> {
+        assertThrows<ObjectOptimisticLockingFailureException> {
             resourceRepository.update(nonExisting)
-            entityManager.flush()
+            resourceRepository.flush()
         }
     }
 
