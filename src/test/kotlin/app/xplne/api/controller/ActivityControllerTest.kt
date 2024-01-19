@@ -83,11 +83,11 @@ class ActivityControllerTest {
         verify(exactly = 1) { activityService.create(any<ActivityDto>()) }
     }
 
-    @DisplayName("POST invalid DTO for creation returns 400")
+    @DisplayName("POST invalid DTO without name returns 400")
     @Test
     fun givenInvalidDto_whenPostCreate_thenReturn400() {
         // GIVEN
-        val dto = ActivityDto(UUID.randomUUID(), name = null)
+        val dto = ActivityDto(id = null, name = null)
         // WHEN-THEN
         mockMvc.post(BASE_PATH_ACTIVITIES) {
             contentType = MediaType.APPLICATION_JSON
