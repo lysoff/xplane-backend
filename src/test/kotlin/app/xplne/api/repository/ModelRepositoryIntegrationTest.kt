@@ -1,13 +1,14 @@
 package app.xplne.api.repository
 
 import app.xplne.api.annotation.JpaIntegrationTest
+import app.xplne.api.dto.ModelShortView
 import app.xplne.api.model.*
+import app.xplne.api.repository.common.findByIdOrNull
 import app.xplne.api.util.TestData
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.jdbc.Sql
 import java.util.*
 
@@ -19,12 +20,12 @@ class ModelRepositoryIntegrationTest(
 ) {
     @Test
     @Sql("classpath:sql/insert-basic-model.sql")
-    fun givenNewModel_whenSave_thenInsertInDB() {
+    fun givenNewModel_whenPersist_thenInsertInDB() {
         // GIVEN
         val model = Model(name = "New model")
-        copyActivitiesAndResources(model, TestData.basicModel)
+        copyActivitiesAndResources(model, TestData.getBasicModel())
         // WHEN
-        val saved = modelRepository.save(model)
+        val saved = modelRepository.persist(model)
         // THEN
         assertNotNull(saved.id)
         assertEquals(model.name, saved.name)
@@ -33,12 +34,12 @@ class ModelRepositoryIntegrationTest(
 
     @Test
     @Sql("classpath:sql/insert-basic-model.sql")
-    fun givenModelInDb_whenSaveItWithChangedName_thenUpdateInDB() {
+    fun givenModelInDb_whenMergeChangedName_thenUpdateInDB() {
         // GIVEN
-        val modelInDb = TestData.basicModel
+        val modelInDb = TestData.getBasicModel()
         // WHEN
         val changed = modelInDb.copy(name = "Changed name")
-        val updated = modelRepository.save(changed)
+        val updated = modelRepository.merge(changed)
         // THEN
         assertEquals(changed.name, updated.name)
         verifyModelInDb(changed, modelInDb.id!!)
@@ -46,13 +47,13 @@ class ModelRepositoryIntegrationTest(
 
     @Test
     @Sql("classpath:sql/insert-basic-model.sql")
-    fun givenModelInDb_whenSaveItWithDeletedResource_thenUpdateInDB() {
+    fun givenModelInDb_whenMergeWithDeletedResource_thenUpdateInDB() {
         // GIVEN
-        val basicModel = TestData.basicModel
+        val basicModel = TestData.getBasicModel()
         // WHEN
         val changedResources = basicModel.resources.apply { removeAt(0) }
         val changedModel = basicModel.copy(resources = changedResources)
-        val updated = modelRepository.save(changedModel)
+        val updated = modelRepository.merge(changedModel)
         // THEN
         assertEquals(changedResources.size, updated.resources.size)
         assertTrue(changedResources.containsAll(updated.resources))
@@ -63,7 +64,7 @@ class ModelRepositoryIntegrationTest(
     @Sql("classpath:sql/insert-basic-model.sql")
     fun givenModelInDb_whenDeleteById_thenItIsDeleted() {
         // GIVEN
-        val modelToDelete = TestData.basicModel
+        val modelToDelete = TestData.getBasicModel()
         // WHEN
         modelRepository.deleteById(modelToDelete.id!!)
         // THEN
@@ -79,12 +80,16 @@ class ModelRepositoryIntegrationTest(
     @Sql("classpath:sql/insert-superhero-model.sql")
     fun givenDbHasModels_whenFindAll_thenReturnAll() {
         // GIVEN
-        val expectedModels = listOf(TestData.basicModel, TestData.superheroModel)
+        val existingModels = listOf(TestData.getBasicModel(), TestData.getSuperheroModel())
         // WHEN
-        val foundModels: MutableList<Model> = modelRepository.findAll()
+        val repoOutput: List<ModelShortView> = modelRepository.findAllBy()
         // THEN
-        assertEquals(expectedModels.size, foundModels.size)
-        assertTrue(expectedModels.containsAll(foundModels))
+        assertEquals(existingModels.size, repoOutput.size)
+        existingModels.forEachIndexed{index: Int, model: Model ->
+            val shortView: ModelShortView = repoOutput[index]
+            assertEquals(model.id, shortView.id)
+            assertEquals(model.name, shortView.name)
+        }
     }
 
     @Test
@@ -92,7 +97,7 @@ class ModelRepositoryIntegrationTest(
     @Sql("classpath:sql/insert-superhero-model.sql")
     fun givenDbHasModels_whenFindById_thenReturnIt() {
         // GIVEN
-        val expected = TestData.basicModel
+        val expected = TestData.getBasicModel()
         // WHEN
         val found: Model? = modelRepository.findByIdOrNull(expected.id!!)
         // THEN

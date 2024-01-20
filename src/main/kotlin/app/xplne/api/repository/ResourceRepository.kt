@@ -1,7 +1,7 @@
 package app.xplne.api.repository
 
 import app.xplne.api.model.Resource
-import org.springframework.data.jpa.repository.JpaRepository
+import app.xplne.api.repository.common.CustomJpaRepository
 import java.util.*
 
-interface ResourceRepository: JpaRepository<Resource, UUID>
+interface ResourceRepository: CustomJpaRepository<Resource, UUID>

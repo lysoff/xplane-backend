@@ -1,7 +1,7 @@
 package app.xplne.api.repository
 
 import app.xplne.api.model.Activity
-import org.springframework.data.jpa.repository.JpaRepository
+import app.xplne.api.repository.common.CustomJpaRepository
 import java.util.*
 
-interface ActivityRepository: JpaRepository<Activity, UUID>
+interface ActivityRepository: CustomJpaRepository<Activity, UUID>

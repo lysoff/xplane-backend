@@ -1,34 +1,37 @@
 package app.xplne.api.controller
 
-import app.xplne.api.dto.ModelFullView
+import app.xplne.api.constants.BASE_PATH_MODELS
+import app.xplne.api.constants.PATH_MODEL_ID
+import app.xplne.api.dto.ModelFullDto
 import app.xplne.api.dto.ModelShortView
+import app.xplne.api.service.ModelService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-@RequestMapping("/v1/models")
+@RequestMapping(BASE_PATH_MODELS)
 @Tag(name = "Models")
-class ModelController {
+class ModelController(
+    private val modelService: ModelService
+) {
 
     @GetMapping
     @Operation(summary = "Get all models")
     fun findAllModels(): List<ModelShortView> {
-        // TODO implement interaction with DB
-        return emptyList()
+        return modelService.findAll()
     }
 
-    @GetMapping("/{modelId}")
+    @GetMapping(PATH_MODEL_ID)
     @Operation(summary = "Get model by ID")
-    fun getModelById(@PathVariable modelId: UUID): ModelFullView? {
-        // TODO implement interaction with DB
-        return null
+    fun getModelById(@PathVariable modelId: UUID): ModelFullDto? {
+        return modelService.findByIdOrNull(modelId)
     }
 
-    @DeleteMapping("/{modelId}")
+    @DeleteMapping(PATH_MODEL_ID)
     @Operation(summary = "Delete Model")
     fun deleteModel(@PathVariable modelId: UUID) {
-        // TODO implement interaction with DB
+        modelService.deleteById(modelId)
     }
 }
